@@ -33,3 +33,45 @@ Logic-Based Value Filling: To resolve the Null value ambiguity, we implemented a
 Unit Normalization: For the physical dimensions (Weight and Height), we performed mathematical conversions on the raw data. By identifying the unit label (like oz or lbs), we converted those specific values into a single, uniform metric (grams) across the entire sheet, ensuring that an item weighing "1 lb" was no longer numerically smaller than an item weighing "500 g."
 
 # Queries 
+
+### Query #1: Which products generated the highest total sales revenue, by country?
+Code:
+```SQL
+
+```
+Query Results:
+
+### Query #2: Which employees handled the largest number of orders, and how do their results compare with other?
+Code:
+```SQL
+
+```
+Query Results:
+
+### Query #3: Which vendors supply products that appear in more than one category?
+Code:
+```SQL
+
+```
+Query Results:
+
+### Query #4:
+Code:
+```SQL
+
+```
+Query Results:
+
+### Query #5:
+Code:
+```SQL
+
+```
+Query Results:
+
+### Query #6: 
+Code:
+```SQL
+
+```
+Query Results:
