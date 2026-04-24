@@ -51,9 +51,28 @@ Query Results:
 ### Query #3: Which vendors supply products that appear in more than one category?
 Code:
 ```SQL
-
+SELECT
+    v.vendor_id,
+    v.vendor_name,
+    COUNT(DISTINCT p.category) AS number_of_categories,
+    GROUP_CONCAT(DISTINCT p.category ORDER BY p.category SEPARATOR ', ') AS categories_supplied
+FROM Vendors v
+JOIN Supply s
+    ON v.vendor_id = s.vendor_id
+JOIN Products p
+    ON s.sku = p.sku
+GROUP BY 
+    v.vendor_id,
+    v.vendor_name
+HAVING 
+    COUNT(DISTINCT p.category) > 1
+ORDER BY 
+    number_of_categories DESC,
+    v.vendor_name ASC;
 ```
 Query Results:
+<img width="709" height="134" alt="Screenshot 2026-04-24 at 5 30 15 PM" src="https://github.com/user-attachments/assets/b926c49c-e749-4bad-beed-b7cc1e1bfb40" />
+
 
 ### Query #4:
 Code:
