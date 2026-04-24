@@ -13,7 +13,18 @@ Member Names:
 Northline Outfitters is an expanding e-commerce retailer focused on selling student-friendly tech and lifestyle accessories  in the United States and Canada. They buy their merchandise from different vendors and then sell it directly to their customers. Some of their data challenges include mixed format dates, country indicators embedded in identifiers, metric and imperial measurements, customer information embedded in a single text field, inconsistent payment, discount, and tax formats, and duplicate-looking products or variant rows. 
 
 # Conceptual Model
+<img width="904" height="774" alt="image" src="https://github.com/user-attachments/assets/544283c5-3da1-47f2-ae2d-4bd275cbc7b2" />
 
+Explanation:
+Our model organizes Northline Outfitters’ sales data into separate tables so the information is cleaner and easier to use. The main table is Orders, which connects customers, employees, and shipping information together. Each order belongs to one customer, is handled by one employee, and has one shipping record.
+
+The OrderDetails table stores the products included in each order. This is separate from Orders because one order can have multiple products. Each order detail line connects to one product through the product SKU.
+
+The Products table stores information about each item, such as the product description, category, price, reorder level, and discontinued status. Products are connected to vendors through the Supply table. We used Supply because one vendor can supply many products, and one product may be connected to vendors through supplier records.
+
+The Vendors table stores supplier information, such as the vendor name, phone number, and representative. The Employee table stores the employee connected to each order and their manager. The Shipping table stores shipping location details like country and shipping destination.
+
+Overall, the relationships show how a customer places an order, an employee handles it, products are sold through order details, and vendors supply those products.
 
 
 # Data quality assessment
@@ -44,7 +55,7 @@ SELECT
     p.sku,
     p.product_description,
     p.category,
-    SUM(od.line_total) AS total_sales_revenue
+    ROUND(SUM(od.line_total), 2) AS total_sales_revenue
 FROM OrderDetails od
 JOIN Orders o 
     ON od.order_id = o.order_id
@@ -52,17 +63,24 @@ JOIN Shipping s
     ON o.ship_id = s.ship_id
 JOIN Products p 
     ON od.sku = p.sku
+WHERE 
+    s.ship_country IS NOT NULL
+    AND TRIM(s.ship_country) <> ''
+    AND od.line_total > 0
 GROUP BY 
     s.ship_country,
     p.sku,
     p.product_description,
     p.category
+HAVING 
+    SUM(od.line_total) > 350
 ORDER BY 
     s.ship_country ASC,
     total_sales_revenue DESC;
 ```
 Query Results:
-<img width="553" height="637" alt="Screenshot 2026-04-24 at 6 21 55 PM" src="https://github.com/user-attachments/assets/70269a00-05e1-428c-9811-6eee5d5cacdd" />
+<img width="552" height="181" alt="Screenshot 2026-04-24 at 6 31 14 PM" src="https://github.com/user-attachments/assets/fe8fbf7c-6337-43f3-974a-597f6f872130" />
+
 
 ### Query #2: Which employees handled the largest number of orders, and how do their results compare with other?
 Code:
