@@ -31,3 +31,5 @@ Case Standardization: We applied a global casing rule across the entire dataset.
 Logic-Based Value Filling: To resolve the Null value ambiguity, we implemented an automated "Default to No" rule. Any empty cell in a status-related column (like Return Flags or Discontinued Status) was filled with an "N," ensuring every row had a definitive, actionable value.
 
 Unit Normalization: For the physical dimensions (Weight and Height), we performed mathematical conversions on the raw data. By identifying the unit label (like oz or lbs), we converted those specific values into a single, uniform metric (grams) across the entire sheet, ensuring that an item weighing "1 lb" was no longer numerically smaller than an item weighing "500 g."
+
+#Queries
