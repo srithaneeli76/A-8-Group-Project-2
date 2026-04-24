@@ -74,21 +74,21 @@ Query Results:
 <img width="709" height="134" alt="Screenshot 2026-04-24 at 5 30 15 PM" src="https://github.com/user-attachments/assets/b926c49c-e749-4bad-beed-b7cc1e1bfb40" />
 
 
-### Query #4:
+### Query #4: Which product categories generate the most revenue, and what is the average discount used in each category?
 Code:
 ```SQL
 
 ```
 Query Results:
 
-### Query #5:
+### Query #5: Which customers have the highest total spending, and are they loyalty customers, students, or guest checkouts?
 Code:
 ```SQL
 
 ```
 Query Results:
 
-### Query #6: 
+### Query #6: Which products are close to or below their reorder level based on current supply pack size?
 Code:
 ```SQL
 
