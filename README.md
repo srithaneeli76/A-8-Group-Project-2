@@ -32,21 +32,57 @@ Logic-Based Value Filling: To resolve the Null value ambiguity, we implemented a
 
 Unit Normalization: For the physical dimensions (Weight and Height), we performed mathematical conversions on the raw data. By identifying the unit label (like oz or lbs), we converted those specific values into a single, uniform metric (grams) across the entire sheet, ensuring that an item weighing "1 lb" was no longer numerically smaller than an item weighing "500 g."
 
+Shipping ID Reconstruction: We found that some records in the Orders table were missing ship_id values. Since the project required revenue to be analyzed by country, we reconnected orders to the cleaned Shipping table by matching the row order of the cleaned orders and shipping records. This allowed each order to connect to a shipping country for analysis.
+
 # Queries 
 
 ### Query #1: Which products generated the highest total sales revenue, by country?
 Code:
 ```SQL
-
+SELECT 
+    s.ship_country,
+    p.sku,
+    p.product_description,
+    p.category,
+    SUM(od.line_total) AS total_sales_revenue
+FROM OrderDetails od
+JOIN Orders o 
+    ON od.order_id = o.order_id
+JOIN Shipping s 
+    ON o.ship_id = s.ship_id
+JOIN Products p 
+    ON od.sku = p.sku
+GROUP BY 
+    s.ship_country,
+    p.sku,
+    p.product_description,
+    p.category
+ORDER BY 
+    s.ship_country ASC,
+    total_sales_revenue DESC;
 ```
 Query Results:
+<img width="553" height="637" alt="Screenshot 2026-04-24 at 6 21 55 PM" src="https://github.com/user-attachments/assets/70269a00-05e1-428c-9811-6eee5d5cacdd" />
 
 ### Query #2: Which employees handled the largest number of orders, and how do their results compare with other?
 Code:
 ```SQL
-
+SELECT
+    e.manager_ref,
+    o.employee_id,
+    COUNT(o.order_id) AS total_orders_handled
+FROM Orders o
+JOIN Employee e
+    ON o.employee_id = e.employee_id
+GROUP BY 
+    e.manager_ref,
+    o.employee_id
+ORDER BY 
+    e.manager_ref ASC,
+    total_orders_handled DESC;
 ```
 Query Results:
+<img width="277" height="217" alt="Screenshot 2026-04-24 at 6 12 49 PM" src="https://github.com/user-attachments/assets/40f7382c-73a5-4281-88bd-aedb97185e3a" />
 
 ### Query #3: Which vendors supply products that appear in more than one category?
 Code:
@@ -74,23 +110,89 @@ Query Results:
 <img width="709" height="134" alt="Screenshot 2026-04-24 at 5 30 15 PM" src="https://github.com/user-attachments/assets/b926c49c-e749-4bad-beed-b7cc1e1bfb40" />
 
 
-### Query #4: Which product categories generate the most revenue, and what is the average discount used in each category?
+### Query #4: Which product categories generate the most revenue and have the highest average order line value?
+
+Business Justification: This helps Northline Outfitters identify which categories bring in the most money and which categories have stronger sales per order line. Management can use this to focus promotions, inventory decisions, and product planning on the strongest categories.
+
 Code:
 ```SQL
-
+SELECT
+    p.category,
+    COUNT(DISTINCT od.order_id) AS number_of_orders,
+    SUM(od.quantity) AS total_units_sold,
+    SUM(od.line_total) AS total_revenue,
+    ROUND(AVG(od.line_total), 2) AS average_line_value
+FROM OrderDetails od
+JOIN Products p
+    ON od.sku = p.sku
+GROUP BY 
+    p.category
+ORDER BY 
+    total_revenue DESC;
 ```
 Query Results:
+<img width="531" height="234" alt="Screenshot 2026-04-24 at 5 57 42 PM" src="https://github.com/user-attachments/assets/42b980fa-0a6e-43ff-b232-93d6522ce0c3" />
 
 ### Query #5: Which customers have the highest total spending, and are they loyalty customers, students, or guest checkouts?
+
+Business Justification: This helps the company identify valuable customer groups. Management can use this to decide whether loyalty customers, students, or regular customers are contributing the most revenue.
+
 Code:
 ```SQL
-
+SELECT
+    c.customer_id,
+    CONCAT(c.customer_f_nm, ' ', c.customer_l_nm) AS customer_name,
+    c.customer_email,
+    c.loyalty_customer,
+    c.is_student,
+    c.guest_checkout,
+    COUNT(DISTINCT o.order_id) AS total_orders,
+    SUM(od.line_total) AS total_spent
+FROM Customers c
+JOIN Orders o
+    ON c.customer_id = o.customer_id
+JOIN OrderDetails od
+    ON o.order_id = od.order_id
+GROUP BY
+    c.customer_id,
+    c.customer_f_nm,
+    c.customer_l_nm,
+    c.customer_email,
+    c.loyalty_customer,
+    c.is_student,
+    c.guest_checkout
+ORDER BY
+    total_spent DESC;
 ```
 Query Results:
+<img width="666" height="254" alt="Screenshot 2026-04-24 at 5 55 16 PM" src="https://github.com/user-attachments/assets/9dc2e626-6e8e-4f9d-8a45-25f30a766107" />
 
-### Query #6: Which products are close to or below their reorder level based on current supply pack size?
+### Query #6: Which discontinued products have still appeared in customer orders, and how much revenue did they generate?
+
+Business Justification: This helps Northline Outfitters identify discontinued products that are still being sold or appearing in orders. If discontinued products continue generating sales, management may need to check inventory records, product availability, or decide whether similar replacement products should be offered.
+
 Code:
 ```SQL
-
+SELECT
+    p.sku,
+    p.product_description,
+    p.category,
+    p.discontinued,
+    COUNT(DISTINCT od.order_id) AS number_of_orders,
+    SUM(od.quantity) AS total_units_sold,
+    SUM(od.line_total) AS total_revenue
+FROM Products p
+JOIN OrderDetails od
+    ON p.sku = od.sku
+WHERE 
+    p.discontinued = 'Y'
+GROUP BY
+    p.sku,
+    p.product_description,
+    p.category,
+    p.discontinued
+ORDER BY
+    total_revenue DESC;
 ```
 Query Results:
+<img width="684" height="76" alt="Screenshot 2026-04-24 at 5 59 35 PM" src="https://github.com/user-attachments/assets/a914dd12-16a1-42d1-b30f-3badca0232ee" />
